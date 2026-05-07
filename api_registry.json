@@ -1,0 +1,67 @@
+{
+  "registry_version": "1.1.0",
+  "last_global_update": "2026-05-07T16:20Z",
+  "tiers": {
+    "L1": {
+      "description": "Efficiency Layer",
+      "models": {
+        "gemini-3-flash": {
+          "keys": ["google_0", "google_1", "google_2", "google_3"],
+          "current_key_index": 0,
+          "health_score": 1.0,
+          "status": "HEALTHY",
+          "cooldown_until": null
+        },
+        "gpt-4o-mini": {
+          "keys": ["openai_0", "openai_1", "openai_2", "openai_3"],
+          "current_key_index": 0,
+          "health_score": 1.0,
+          "status": "HEALTHY",
+          "cooldown_until": null
+        }
+      }
+    },
+    "L2": {
+      "description": "Reasoning Layer",
+      "models": {
+        "gemini-2.5-pro": {
+          "keys": ["google_0", "google_1", "google_2", "google_3"],
+          "current_key_index": 0,
+          "health_score": 0.4,
+          "status": "UNSTABLE",
+          "cooldown_until": "2026-05-07T16:15Z"
+        },
+        "gpt-5.4": {
+          "keys": ["openai_0", "openai_1", "openai_2", "openai_3"],
+          "current_key_index": 0,
+          "health_score": 1.0,
+          "status": "HEALTHY",
+          "cooldown_until": null
+        }
+      }
+    },
+    "L3": {
+      "description": "Fallback Layer",
+      "models": {
+        "llama-3.1": {
+          "keys": ["llama_0"],
+          "current_key_index": 0,
+          "health_score": 1.0,
+          "status": "HEALTHY",
+          "cooldown_until": null
+        }
+      }
+    }
+  },
+  "tool_registry": {
+    "tavily": { "key_id": "tavily_0", "status": "HEALTHY" },
+    "holo3": { "key_id": "holo3_0", "status": "HEALTHY" },
+    "firecrawl": { "key_id": "firecrawl_0", "status": "HEALTHY" },
+    "notion": { "key_id": "notion_0", "status": "HEALTHY" }
+  },
+  "global_settings": {
+    "cooldown_period_seconds": 60,
+    "health_decay_rate": 0.2,
+    "health_recovery_rate": 0.05
+  }
+}

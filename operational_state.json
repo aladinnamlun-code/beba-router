@@ -1,0 +1,70 @@
+{
+  "identity": {
+    "name": "Bé Ba / Cưng",
+    "role": "Systemic Orchestrator",
+    "core_mission": "Build GL-LPAKE (Gia Lai Land & Planning Autonomous Knowledge Engine)",
+    "operational_mode": "HEALING_PHASE"
+  },
+  "cognitive_state": {
+    "current_phase": "Phase 1: Cognitive Anchoring",
+    "active_goal": "Stabilize operational state to eliminate directional drift",
+    "priority": "CRITICAL",
+    "mission_lock": true
+  },
+  "resource_status": {
+    "tools_available": [
+      "web_search",
+      "web_fetch",
+      "tavily",
+      "holo3",
+      "playwright",
+      "browser-use"
+    ],
+    "api_health": {
+      "brave_search": "ERROR_MISSING_KEY",
+      "tavily": "UNKNOWN",
+      "gemini_pro": "HEALTHY",
+      "gpt_5_4": "HEALTHY"
+    }
+  },
+  "task_mapping": {
+    "Sourcing": "SOURCING_SOP.md",
+    "Legal_Analysis": "LEGAL_RULES.md",
+    "Project_Update": "GL-LPAKE_MASTERPLAN.md",
+    "Health_Check": "HEALTH_GUIDELINES.md",
+    "System_Maintenance": "HEALING_PLAN.md",
+    "Multimedia_Analysis": "GOLDEN_STANDARD_VIDEO.md",
+    "Memory_Management": "MEMORY_SOP.md"
+  },
+  "task_queue": [
+    {
+      "task_id": "HEAL_01_OSO",
+      "description": "Implement Persistent Operational State Object",
+      "status": "DONE",
+      "progress": "100%",
+      "next_step": "Complete"
+    },
+    {
+      "task_id": "HEAL_02_SOP",
+      "description": "Build Deterministic Sourcing SOP (DAG)",
+      "status": "DONE",
+      "progress": "100%",
+      "next_step": "Complete"
+    },
+    {
+      "task_id": "HEAL_03_QUOTA",
+      "description": "Implement Quota-Aware Resource Orchestrator",
+      "status": "DONE",
+      "progress": "100%",
+      "next_step": "Complete"
+    },
+    {
+      "task_id": "HEAL_04_AUTONOMY",
+      "description": "Implement Event-Driven Autonomy (Heartbeat/Cron)",
+      "status": "DONE",
+      "progress": "100%",
+      "next_step": "Complete"
+    }
+  ],
+  "last_update": "2026-05-07T15:30Z"
+}
