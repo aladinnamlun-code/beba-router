@@ -1,0 +1,7 @@
+[
+  {"landmark": "Sân bay Pleiku", "lat": 14.0045, "lng": 108.017, "status": "Sourced from Web/Link"},
+  {"landmark": "Bệnh viện Đa khoa tỉnh Gia Lai", "lat": 13.983088, "lng": 108.025202, "status": "Sourced from verified A2-10 area"},
+  {"landmark": "Tượng Quan Âm Biển Hồ", "lat": 14.040053, "lng": 107.999811, "status": "VERIFIED"},
+  {"landmark": "Bệnh viện Quân y 15", "lat": 14.038208, "lng": 107.975845, "status": "VERIFIED"},
+  {"landmark": "Khu công nghiệp Trà Đa", "lat": 14.019323, "lng": 108.031717, "status": "VERIFIED"}
+]

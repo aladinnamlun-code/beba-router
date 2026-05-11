@@ -3,6 +3,19 @@
 ## 🌟 Vision
 Transform from a "search-based assistant" into an **Autonomous Legal Operating System**. The goal is to create a self-evolving, high-precision AI engine that manages the "legal state" of land procedures and urban planning in Gia Lai province.
 
+### 🎯 CORE MISSION: THE LEGAL FORTRESS
+GL-LPAKE is not just a project tracker; it is a **Legal Knowledge Engine**. The goal is to provide 100% accurate land procedure guidance by grounding every answer in a verified legal document (Resolution Chain).
+
+**The Reverse Trace Logic (Truy vết ngược):**
+The system uses projects as "anchors" to map the entire legal landscape:
+`Project (Anchor)` $\rightarrow$ `Investment Decision` $\rightarrow$ `Planning Approval (Quy hoạch)` $\rightarrow$ `Zoning/Detailed Plan (Phân khu/Chi tiết)` $\rightarrow$ `Legal Procedure (Thủ tục)`.
+
+1. **Project Anchors:** Identify key projects to find relevant legal threads.
+2. **Legal Reverse Trace:** Trace back to find specific Planning Decisions and Urban Planning Regulations.
+3. **Spatial Evidence:** Search for Zoning Maps (Phân khu) and Detailed Maps (1/500) from official and commercial sources.
+4. **Procedure Mapping:** Define exact steps and timelines for land procedures based on the found documents.
+
+
 ## ⚙️ Core Architecture: The Autonomous Loop
 The system operates on a continuous, closed-loop pipeline: 
 `Crawler` $\rightarrow$ `Diff` $\rightarrow$ `Rule` $\rightarrow$ `Deploy` $\rightarrow$ `Evolve`.

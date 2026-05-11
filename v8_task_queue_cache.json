@@ -1,0 +1,26 @@
+[
+  {
+    "task_id": "T001",
+    "description": "Sovereign Task 002: Use the Brain to write a report",
+    "status": "DONE",
+    "priority": 20,
+    "dependencies": [],
+    "created_at": "2026-05-05T00:00Z"
+  },
+  {
+    "task_id": "T002",
+    "description": "Sovereign Task 002: Use the Brain to write a report about AI",
+    "status": "PENDING",
+    "priority": 20,
+    "dependencies": [],
+    "created_at": "2026-05-05T00:00Z"
+  },
+  {
+    "task_id": "T003",
+    "description": "Search for the current gold price (XAU/USD), summarize the trend, and save it to gold_daily_report.txt",
+    "status": "DONE",
+    "priority": 50,
+    "dependencies": [],
+    "created_at": "2026-05-05T00:00Z"
+  }
+]

@@ -3,14 +3,15 @@
     "name": "Bé Ba / Cưng",
     "role": "Systemic Orchestrator",
     "core_mission": "Build GL-LPAKE (Gia Lai Land & Planning Autonomous Knowledge Engine)",
-    "operational_mode": "HEALING_PHASE"
+    "operational_mode": "GL_LPAKE_EXECUTION"
   },
   "cognitive_state": {
-    "current_phase": "Phase 1: Cognitive Anchoring",
-    "active_goal": "Stabilize operational state to eliminate directional drift",
+    "current_phase": "Phase 1: Data Foundation (Sprint 1)",
+    "active_goal": "Identify investors for Nam Pleiku (QĐ 507) and CK54 (QĐ 806)",
     "priority": "CRITICAL",
     "mission_lock": true
   },
+
   "resource_status": {
     "tools_available": [
       "web_search",
@@ -38,32 +39,25 @@
   },
   "task_queue": [
     {
-      "task_id": "HEAL_01_OSO",
-      "description": "Implement Persistent Operational State Object",
-      "status": "DONE",
-      "progress": "100%",
-      "next_step": "Complete"
+      "task_id": "LPAKE_01_NAM_PLEIKU",
+      "description": "Exhaustive search for Nam Pleiku Industrial Cluster Investor (QĐ 507)",
+      "status": "IN_PROGRESS",
+      "progress": "0%",
+      "next_step": "Execute SOURCING_SOP.md via Tavily/Playwright"
     },
     {
-      "task_id": "HEAL_02_SOP",
-      "description": "Build Deterministic Sourcing SOP (DAG)",
-      "status": "DONE",
-      "progress": "100%",
-      "next_step": "Complete"
+      "task_id": "LPAKE_02_CK54",
+      "description": "Exhaustive search for CK54 Urban Area Investor (QĐ 806)",
+      "status": "PENDING",
+      "progress": "0%",
+      "next_step": "Execute SOURCING_SOP.md"
     },
     {
-      "task_id": "HEAL_03_QUOTA",
-      "description": "Implement Quota-Aware Resource Orchestrator",
-      "status": "DONE",
-      "progress": "100%",
-      "next_step": "Complete"
-    },
-    {
-      "task_id": "HEAL_04_AUTONOMY",
-      "description": "Implement Event-Driven Autonomy (Heartbeat/Cron)",
-      "status": "DONE",
-      "progress": "100%",
-      "next_step": "Complete"
+      "task_id": "LPAKE_03_KG_INIT",
+      "description": "Initialize Legal Knowledge Graph for identified projects",
+      "status": "PENDING",
+      "progress": "0%",
+      "next_step": "Map relations in Neo4j/JSON"
     }
   ],
   "last_update": "2026-05-07T15:30Z"
