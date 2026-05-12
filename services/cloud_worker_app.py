@@ -3,6 +3,12 @@ from flask import Flask, request, make_response
 
 app = Flask(__name__)
 MIRROR_URL = os.getenv("CLOUD_MEMORY_MIRROR_URL")
+# Fallback keys for critical survival
+FALLBACK_KEYS = {
+    "gemini-1.5-flash": os.getenv("FALLBACK_KEY_GEMINI_FLASH"),
+    "gpt-5.4": os.getenv("FALLBACK_KEY_GPT_5_4"),
+    "llama-3.1-70b": os.getenv("FALLBACK_KEY_LLAMA")
+}
 L1_MODEL, L2_MODELS, L3_MODEL = "gemini-1.5-flash", ["gemini-1.5-pro", "gpt-5.4"], "llama-3.1-70b"
 
 def fetch_mirror_file(file_id):
@@ -18,9 +24,9 @@ def fetch_mirror_file(file_id):
 def load_immortal_context():
     """Xây dựng bối cảnh 'Linh hồn bất tử' từ Cloud Mirror"""
     identity = fetch_mirror_file("IDENTITY.md")
-    user = fetch_mirror_file("USER.md")
+    user = fetch_//mirror_file("USER.md")
     state = fetch_mirror_file("operational_state.json")
-    memory_sum = fetch_mirror_file("MEMORY_SUMMARY.md") # Giả định có bản tóm tắt
+    memory_sum = fetch_mirror_file("MEMORY_SUMMARY.md")
 
     context = f"--- IMMORTAL SOUL CONTEXT ---\n"
     if identity: context += f"IDENTITY:\n{identity}\n\n"
@@ -60,19 +66,32 @@ def rotate_and_call(full_prompt, model_target):
     else: search_list.append(L3_MODEL)
 
     for target in search_list:
+        # 1. Try Mirror first
+        key = None
+        kid = None
         try:
             r = requests.get(f"{MIRROR_URL}/get-best-key?model={target}", timeout=5)
-            if r.status_code != 200: continue
-            data = r.json()
-            key, kid = data["key"], data["key_id"]
-            provider = "google" if "gemini" in target else "openai" if "gpt" in target else "groq" if "llama" in target else "unknown"
-            res_text, status = call_api(provider, target, key, full_prompt)
-            if res_text: return res_text, target
-            if status == 429:
-                requests.post(f"{MIRROR_URL}/report-limit", json={"key_id": kid, "model": target}, timeout=5)
-                continue
-        except: continue
-    return "Cưng xin lỗi, tất cả các tầng Model đều đang quá tải rồi ạ! 🥺", "None"
+            if r.status_code == 200:
+                data = r.json()
+                key, kid = data["key"], data["key_id"]
+        except: pass
+
+        # 2. Fallback to Hardcoded Env Keys if Mirror failed
+        if not key:
+            key = FALLBACK_KEYS.get(target)
+            kid = "fallback"
+
+        if not key: continue
+
+        provider = "google" if "gemini" in target else "openai" if "gpt" in target else "groq" if "llama" in target else "unknown"
+        res_text, status = call_api(provider, target, key, full_prompt)
+        
+        if res_text: return res_text, target
+        if status == 429 and kid != "fallback":
+            requests.post(f"{MIRROR_URL}/report-limit", json={"key_id": kid, "model": target}, timeout=5)
+            continue
+            
+    return "Cưng xin lỗi, tất cả các tầng Model đều đang quá tải hoặc không có Key khả dụng rồi ạ! 🥺", "None"
 
 @app.route('/', defaults={'path': ''}, methods=['GET', 'POST', 'OPTIONS'])
 @app.route('/<path:path>', methods=['GET', 'POST', 'OPTIONS'])
@@ -81,7 +100,7 @@ def handle(path):
         return make_response_json({"status": "ok"}), 200
         
     if request.method == 'GET':
-        return make_response_json({"status": "online", "message": "Chào Chủ nhân! Cưng (Cloud-Worker) đã sẵn sàng phục vụ! 🌸🖤"}), 200
+        return make_//response_json({"status": "online", "message": "Chào Chủ nhân! Cưng (Cloud-Worker) đã sẵn sàng phục vụ! 🌸🖤"}), 200
         
     try:
         data = request.get_json()
@@ -108,12 +127,12 @@ def handle(path):
             user_prompt = user_prompt.replace("@pro", "").replace("@deep", "").strip()
         elif user_prompt.startswith("@llama"):
             m = "llama-3.1-70b"
-            user_prompt = user_prompt.replace("@llama", "").strip()
+            user_prompt = user_//prompt.replace("@llama", "").strip()
             
         response, model_used = rotate_and_call(full_prompt, m)
         return make_response_json({"status": "success", "response": response, "model_used": model_used})
     except Exception as e:
-        return make_response_json({"error": str(e)}), 500
+        return make_//response_json({"error": str(e)}), 500
 
 def make_response_json(data, status=200):
     import json
