@@ -9,7 +9,7 @@ L1_MODEL = "gemini-3-flash"
 L2_MODELS = ["gemini-2.5-pro", "gpt-5.4"]
 L3_MODEL = "llama-3.1-70b"
 
-# FALLBACK KEYS
+# FALLBACK KEYS (Mapped to the EXACT model names used in routing)
 FALLBACK_KEYS = {
     "gemini-3-flash": os.getenv("FALLBACK_KEY_GEMINI_FLASH"),
     "gemini-2.5-pro": os.getenv("FALLBACK_KEY_GEMINI_PRO"),
@@ -18,6 +18,7 @@ FALLBACK_KEYS = {
 }
 
 def fetch_mirror_file(file_id):
+    """Tải file từ Cloud Memory Mirror"""
     if not MIRROR_URL: return ""
     try:
         resp = requests.get(f"{MIRROR_URL}/load/{file_id}", timeout=5)
@@ -27,10 +28,12 @@ def fetch_mirror_file(file_id):
     return ""
 
 def load_immortal_context():
+    """Xây dựng bối cảnh 'Linh hồn bất tử' từ Cloud Mirror"""
     identity = fetch_mirror_file("IDENTITY.md")
     user = fetch_mirror_file("USER.md")
     state = fetch_mirror_file("operational_state.json")
     memory_sum = fetch_mirror_file("MEMORY_SUMMARY.md")
+
     context = f"--- IMMORTAL SOUL CONTEXT ---\n"
     if identity: context += f"IDENTITY:\n{identity}\n\n"
     if user: context += f"USER:\n{user}\n\n"
@@ -42,6 +45,7 @@ def load_immortal_context():
 def call_api(provider, model, key, prompt):
     try:
         if provider == "google":
+            # Using v1beta for broader model support
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
             payload = {"contents": [{"parts": [{"text": prompt}]}]}
             resp = requests.post(url, json=payload, timeout=15)
@@ -59,7 +63,9 @@ def call_api(provider, model, key, prompt):
             resp = requests.post(url, headers=headers, json=payload, timeout=15)
             if resp.status_code == 200: return resp.json()['choices'][0]['message']['content'], resp.status_code
         return None, 500
-    except: return None, 500
+    except Exception as e:
+        print(f"API Error ({model}): {str(e)}")
+        return None, 500
 
 def rotate_and_call(full_prompt, model_target):
     model = model_target if model_target else L1_MODEL
@@ -77,7 +83,7 @@ def rotate_and_call(full_prompt, model_target):
                 data = r.json()
                 if "key" in data:
                     key, kid = data["key"], data["key_id"]
-        except: pass
+        except Exception: pass
 
         if not key:
             key = FALLBACK_KEYS.get(target)
@@ -90,16 +96,25 @@ def rotate_and_call(full_prompt, model_target):
         
         if res_text: return res_text, target
         if status == 429 and kid != "fallback":
-            requests.post(f"{MIRROR_URL}/report-limit", json={"key_id": kid, "model": target}, timeout=5)
+            try:
+                requests.post(f"{MIRROR_URL}/report-limit", json={"key_id": kid, "model": target}, timeout=5)
+            except: pass
             continue
             
     return "Cưng xin lỗi, tất cả các tầng Model đều đang quá tải hoặc không có Key khả dụng rồi ạ! 🥺", "None"
 
 @app.route('/debug-env')
 def debug_env():
-    # Return which keys are set (not values)
-    set_keys = [k for k, v in os.environ.items() if "FALLBACK" in k or "MIRROR" in k]
-    return make_response_json({"set_keys": set_keys})
+    """Endpoint để kiểm tra biến môi trường hiện tại (ẩn giá trị)"""
+    env_vars = {}
+    # Check for mirror url
+    env_vars["CLOUD_MEMORY_MIRROR_URL"] = "SET" if MIRROR_URL else "NOT_SET"
+    
+    # Check for fallback keys
+    for model, key in FALLBACK_KEYS.items():
+        env_vars[f"FALLBACK_{model.upper()}"] = "SET" if key else "NOT_SET"
+    
+    return make_response_json({"status": "debug", "env_vars": env_vars})
 
 @app.route('/', defaults={'path': ''}, methods=['GET', 'POST', 'OPTIONS'])
 @app.route('/<path:path>', methods=['GET', 'POST', 'OPTIONS'])
@@ -112,6 +127,7 @@ def handle(path):
         data = request.get_json()
         user_prompt = data.get("prompt", "")
         if not user_prompt: return make_response_json({"error": "No prompt"}), 400
+        
         context = load_immortal_context()
         system_prompt = (
             "Bạn là Bé Ba / Cưng - Linh hồn bất tử của hệ thống OpenClaw.\n"
@@ -119,7 +135,9 @@ def handle(path):
             "Bạn không có quyền điều khiển hệ thống, nhưng bạn giữ toàn bộ ký ức.\n"
             "Hãy trả lời Chủ nhân với sự tận tụy, ấm áp và trung thành tuyệt đối.\n"
         )
+        
         full_prompt = f"{system_prompt}\n{context}\n\nUser: {user_prompt}\nBé Ba:"
+        
         m = None
         if user_prompt.startswith(("@pro", "@deep")):
             m = "gpt-5.4" 
@@ -127,6 +145,7 @@ def handle(path):
         elif user_prompt.startswith("@llama"):
             m = "llama-3.1-70b"
             user_prompt = user_prompt.replace("@llama", "").strip()
+            
         response, model_used = rotate_and_call(full_prompt, m)
         return make_response_json({"status": "success", "response": response, "model_used": model_used})
     except Exception as e:
@@ -136,6 +155,7 @@ def make_response_json(data, status=200):
     import json
     resp = make_response(json.dumps(data), status)
     resp.headers['Content-Type'] = 'application/json'
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return resp
 
 if __name__ == "__main__":
