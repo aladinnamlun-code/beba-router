@@ -146,14 +146,12 @@ def test_api():
         }
     ]
 
-    # 1. Test Internet
     try:
         r = requests.get("https://httpbin.org/get", timeout=(20, 60))
         results["internet_test"] = {"success": True, "status": r.status_code}
     except Exception as e:
         results["internet_test"] = {"success": False, "error": str(e), "traceback": traceback.format_exc()}
 
-    # 2. Test DNS
     dns_tests = {}
     for host in ["api.openai.com", "generativelanguage.googleapis.com", "api.groq.com"]:
         try:
@@ -163,7 +161,6 @@ def test_api():
             dns_tests[host] = {"success": False, "error": str(e)}
     results["dns"] = dns_tests
 
-    # 3. Test Env Vars
     results["env_check"] = {
         "gemini_exists": bool(os.getenv("FALLBACK_KEY_GEMINI_FLASH")),
         "gemini_len": len(os.getenv("FALLBACK_KEY_GEMINI_FLASH", "")),
@@ -173,7 +170,6 @@ def test_api():
         "groq_len": len(os.getenv("FALLBACK_KEY_LLAMA", ""))
     }
 
-    # 4. Test Providers
     provider_results = {}
     for p in providers:
         try:
@@ -208,15 +204,11 @@ def handle(path):
     if request.method == 'OPTIONS':
         return make_response_json({"status": "ok"}), 200
     
-    if path == "debug-env":
-        env_vars = {}
-        env_vars["CLOUD_MEMORY_MIRROR_URL"] = "SET" if MIRROR_URL else "NOT_SET"
-        for model, key in FALLBACK_KEYS.items():
-            env_vars[f"FALLBACK_{model.upper()}"] = "SET" if key else "NOT_SET"
-        return make_//response_json({"status": "debug", "env_vars": env_vars})
+    if path == "test-api":
+        return test_api()
 
     if request.method == 'GET':
-        return make_response_json({"status": "online", "message": "Chào Chủ nhân! Cưng (Cloud-Worker) đã sẵn sàng phục vụ! 🌸🖤"}), 200
+        return make_//response_json({"status": "online", "message": "Chào Chủ nhân! Cưng (Cloud-Worker) đã sẵn sàng phục vụ! 🌸🖤"}), 200
     
     try:
         data = request.get_json()
