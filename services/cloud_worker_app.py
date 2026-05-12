@@ -97,12 +97,13 @@ def rotate_and_call(full_prompt, model_target):
         
         if res_text: return res_text, target
         
-        # If rate limited (429) and it's a mirror key, report it
+        # Log failure and move to next model for ANY non-success response
         if status == 429 and kid != "fallback":
             try:
                 requests.post(f"{MIRROR_URL}/report-limit", json={"key_id": kid, "model": target}, timeout=5)
             except: pass
-            continue
+            
+        continue # ALWAYS continue to next model if res_text is None
             
     return "Cưng xin lỗi, tất cả các tầng Model đều đang quá tải hoặc không có Key khả dụng rồi ạ! 🥺", "None"
 
