@@ -97,20 +97,21 @@ def rotate_and_call(full_prompt, model_target):
             
     return "Cưng xin lỗi, tất cả các tầng Model đều đang quá tải hoặc không có Key khả dụng rồi ạ! 🥺", "None"
 
+@app.route('/debug-env', methods=['GET'])
+def debug_env():
+    """Endpoint để kiểm tra biến môi trường hiện tại (ẩn giá trị)"""
+    env_vars = {}
+    env_vars["CLOUD_MEMORY_MIRROR_URL"] = "SET" if MIRROR_URL else "NOT_SET"
+    for model, key in FALLBACK_KEYS.items():
+        env_vars[f"FALLBACK_{model.upper()}"] = "SET" if key else "NOT_SET"
+    return make_response_json({"status": "debug", "env_vars": env_vars})
+
 @app.route('/', defaults={'path': ''}, methods=['GET', 'POST', 'OPTIONS'])
 @app.route('/<path:path>', methods=['GET', 'POST', 'OPTIONS'])
 def handle(path):
     if request.method == 'OPTIONS':
         return make_response_json({"status": "ok"}), 200
     
-    # Explicit check for debug-env to avoid routing issues
-    if path == "debug-env":
-        env_vars = {}
-        env_vars["CLOUD_MEMORY_MIRROR_URL"] = "SET" if MIRROR_URL else "NOT_SET"
-        for model, key in FALLBACK_KEYS.items():
-            env_vars[f"FALLBACK_{model.upper()}"] = "SET" if key else "NOT_SET"
-        return make_response_json({"status": "debug", "env_vars": env_vars})
-
     if request.method == 'GET':
         return make_response_json({"status": "online", "message": "Chào Chủ nhân! Cưng (Cloud-Worker) đã sẵn sàng phục vụ! 🌸🖤"}), 200
     try:
