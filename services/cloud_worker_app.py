@@ -4,12 +4,11 @@ from flask import Flask, request, make_response
 app = Flask(__name__)
 MIRROR_URL = os.getenv("CLOUD_MEMORY_MIRROR_URL")
 
-# --- CORRECTED MODEL NAMES FOR ACTUAL APIs ---
+# --- CORRECTED MODEL NAMES ---
 L1_MODEL = "gemini-1.5-flash"
 L2_MODELS = ["gpt-4o", "gemini-1.5-pro"]
 L3_MODEL = "llama-3.1-70b-versatile"
 
-# FALLBACK KEYS (Mapping environmental variables to the actual API model names)
 FALLBACK_KEYS = {
     "gemini-1.5-flash": os.getenv("FALLBACK_KEY_GEMINI_FLASH"),
     "gemini-1.5-pro": os.getenv("FALLBACK_KEY_GEMINI_PRO"),
@@ -102,26 +101,27 @@ def rotate_and_call(full_prompt, model_target):
             
     return "Cưng xin lỗi, tất cả các tầng Model đều đang quá tải hoặc không có Key khả dụng rồi ạ! 🥺", "None"
 
-@app.route('/debug-env')
-def debug_env():
-    env_vars = {}
-    env_vars["CLOUD_MEMORY_MIRROR_URL"] = "SET" if MIRROR_URL else "NOT_SET"
-    for model, key in FALLBACK_KEYS.items():
-        env_vars[f"FALLBACK_{model.upper()}"] = "SET" if key else "NOT_SET"
-    return make_response_json({"status": "debug", "env_vars": env_vars})
-
 @app.route('/', defaults={'path': ''}, methods=['GET', 'POST', 'OPTIONS'])
 @app.route('/<path:path>', methods=['GET', 'POST', 'OPTIONS'])
 def handle(path):
     if request.method == 'OPTIONS':
         return make_response_json({"status": "ok"}), 200
     
+    # IMPORTANT: Path checks MUST come before general GET check
+    if path == "debug-env":
+        env_vars = {}
+        env_vars["CLOUD_MEMORY_MIRROR_URL"] = "SET" if MIRROR_URL else "NOT_SET"
+        for model, key in FALLBACK_KEYS.items():
+            env_vars[f"FALLBACK_{model.upper()}"] = "SET" if key else "NOT_SET"
+        return make_response_json({"status": "debug", "env_vars": env_vars})
+
     if request.method == 'GET':
         return make_response_json({"status": "online", "message": "Chào Chủ nhân! Cưng (Cloud-Worker) đã sẵn sàng phục vụ! 🌸🖤"}), 200
+    
     try:
         data = request.get_json()
         user_prompt = data.get("prompt", "")
-        if not user_prompt: return make_//response_json({"error": "No prompt"}), 400
+        if not user_prompt: return make_response_json({"error": "No prompt"}), 400
         
         context = load_immortal_context()
         system_prompt = (
@@ -139,7 +139,7 @@ def handle(path):
             user_prompt = user_prompt.replace("@pro", "").replace("@deep", "").strip()
         elif user_prompt.startswith("@llama"):
             m = "llama-3.1-70b-versatile"
-            user_prompt = user_//prompt.replace("@llama", "").strip()
+            user_prompt = user_prompt.replace("@llama", "").strip()
             
         response, model_used = rotate_and_call(full_prompt, m)
         return make_response_json({"status": "success", "response": response, "model_used": model_used})
