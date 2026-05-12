@@ -7,14 +7,14 @@ MIRROR_URL = os.getenv("CLOUD_MEMORY_MIRROR_URL")
 # --- CORRECTED MODEL NAMES FOR ACTUAL APIs ---
 L1_MODEL = "gemini-1.5-flash"
 L2_MODELS = ["gpt-4o", "gemini-1.5-pro"]
-L3_MODEL = "llama3-70b-8192"
+L3_MODEL = "llama-3.1-70b-versatile"
 
 # FALLBACK KEYS (Mapping environmental variables to the actual API model names)
 FALLBACK_KEYS = {
     "gemini-1.5-flash": os.getenv("FALLBACK_KEY_GEMINI_FLASH"),
     "gemini-1.5-pro": os.getenv("FALLBACK_KEY_GEMINI_PRO"),
-    "gpt-4o": os.getenv("FALLBACK_KEY_GPT_5_4"), # Using the key provided for high-tier OpenAI
-    "llama3-70b-8192": os.getenv("FALLBACK_KEY_LLAMA")
+    "gpt-4o": os.getenv("FALLBACK_KEY_GPT_5_4"),
+    "llama-3.1-70b-versatile": os.getenv("FALLBACK_KEY_LLAMA")
 }
 
 def fetch_mirror_file(file_id):
@@ -65,17 +65,15 @@ def call_api(provider, model, key, prompt):
     except Exception: return None, 500
 
 def rotate_and_call(full_prompt, model_target):
-    # Determine the sequence of models to try
     model = model_target if model_target else L1_MODEL
     search_list = [model]
     if model == L1_MODEL: search_list.extend(L2_MODELS + [L3_MODEL])
     elif model in L2_MODELS: search_list.extend([m for m in L2_MODELS if m != model] + [L3_MODEL])
-    else: search_list.append(L1_MODEL) # Fallback to L1 if L3 fails
+    else: search_list.append(L1_MODEL)
 
     for target in search_list:
         key = None
         kid = None
-        # 1. Try to get a dynamic key from Mirror
         try:
             r = requests.get(f"{MIRROR_URL}/get-best-key?model={target}", timeout=5)
             if r.status_code == 200:
@@ -84,26 +82,23 @@ def rotate_and_call(full_prompt, model_target):
                     key, kid = data["key"], data["key_id"]
         except Exception: pass
 
-        # 2. Use hardcoded fallback key if Mirror failed or no key available
         if not key:
             key = FALLBACK_KEYS.get(target)
             kid = "fallback"
 
         if not key: continue
 
-        # Detect provider based on model name
         provider = "google" if "gemini" in target else "openai" if "gpt" in target else "groq" if "llama" in target else "unknown"
         res_text, status = call_api(provider, target, key, full_prompt)
         
         if res_text: return res_text, target
         
-        # Log failure and move to next model for ANY non-success response
         if status == 429 and kid != "fallback":
             try:
                 requests.post(f"{MIRROR_URL}/report-limit", json={"key_id": kid, "model": target}, timeout=5)
             except: pass
             
-        continue # ALWAYS continue to next model if res_text is None
+        continue
             
     return "Cưng xin lỗi, tất cả các tầng Model đều đang quá tải hoặc không có Key khả dụng rồi ạ! 🥺", "None"
 
@@ -122,11 +117,11 @@ def handle(path):
         return make_response_json({"status": "ok"}), 200
     
     if request.method == 'GET':
-        return make_//response_json({"status": "online", "message": "Chào Chủ nhân! Cưng (Cloud-Worker) đã sẵn sàng phục vụ! 🌸🖤"}), 200
+        return make_response_json({"status": "online", "message": "Chào Chủ nhân! Cưng (Cloud-Worker) đã sẵn sàng phục vụ! 🌸🖤"}), 200
     try:
         data = request.get_json()
         user_prompt = data.get("prompt", "")
-        if not user_prompt: return make_response_json({"error": "No prompt"}), 400
+        if not user_prompt: return make_//response_json({"error": "No prompt"}), 400
         
         context = load_immortal_context()
         system_prompt = (
@@ -143,7 +138,7 @@ def handle(path):
             m = "gpt-4o" 
             user_prompt = user_prompt.replace("@pro", "").replace("@deep", "").strip()
         elif user_prompt.startswith("@llama"):
-            m = "llama3-70b-8192"
+            m = "llama-3.1-70b-versatile"
             user_prompt = user_//prompt.replace("@llama", "").strip()
             
         response, model_used = rotate_and_call(full_prompt, m)
