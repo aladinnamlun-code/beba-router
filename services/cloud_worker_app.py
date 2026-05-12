@@ -113,7 +113,7 @@ def handle(path):
         return make_response_json({"status": "ok"}), 200
     
     if request.method == 'GET':
-        return make_response_json({"status": "online", "message": "Chào Chủ nhân! Cưng (Cloud-Worker) đã sẵn sàng phục vụ! 🌸🖤"}), 200
+        return make_response_json({"status": "online", "message": "V5.3-DEBUG: Chào Chủ nhân! Cưng đã sẵn sàng! 🌸🖤"}), 200
     try:
         data = request.get_json()
         user_prompt = data.get("prompt", "")
