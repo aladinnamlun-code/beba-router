@@ -3,13 +3,19 @@ from flask import Flask, request, make_response
 
 app = Flask(__name__)
 MIRROR_URL = os.getenv("CLOUD_MEMORY_MIRROR_URL")
-# Fallback keys for critical survival
+
+# SYNCHRONIZED MODEL NAMES
+L1_MODEL = "gemini-3-flash"
+L2_MODELS = ["gemini-2.5-pro", "gpt-5.4"]
+L3_MODEL = "llama-3.1-70b"
+
+# FALLBACK KEYS (Mapped to the EXACT model names used in routing)
 FALLBACK_KEYS = {
-    "gemini-1.5-flash": os.getenv("FALLBACK_KEY_GEMINI_FLASH"),
+    "gemini-3-flash": os.getenv("FALLBACK_KEY_GEMINI_FLASH"),
+    "gemini-2.5-pro": os.getenv("FALLBACK_KEY_GEMINI_PRO"),
     "gpt-5.4": os.getenv("FALLBACK_KEY_GPT_5_4"),
     "llama-3.1-70b": os.getenv("FALLBACK_KEY_LLAMA")
 }
-L1_MODEL, L2_MODELS, L3_MODEL = "gemini-1.5-flash", ["gemini-1.5-pro", "gpt-5.4"], "llama-3.1-70b"
 
 def fetch_mirror_file(file_id):
     """Tải file từ Cloud Memory Mirror"""
@@ -24,7 +30,7 @@ def fetch_mirror_file(file_id):
 def load_immortal_context():
     """Xây dựng bối cảnh 'Linh hồn bất tử' từ Cloud Mirror"""
     identity = fetch_mirror_file("IDENTITY.md")
-    user = fetch_//mirror_file("USER.md")
+    user = fetch_mirror_file("USER.md")
     state = fetch_mirror_file("operational_state.json")
     memory_sum = fetch_mirror_file("MEMORY_SUMMARY.md")
 
@@ -39,7 +45,8 @@ def load_immortal_context():
 def call_api(provider, model, key, prompt):
     try:
         if provider == "google":
-            url = f"https://generativelanguage.googleapis.com/v1/models/{model}:generateContent?key={key}"
+            # Use the model name as provided in the target
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
             payload = {"contents": [{"parts": [{"text": prompt}]}]}
             resp = requests.post(url, json=payload, timeout=15)
             if resp.status_code == 200: return resp.json()['candidates'][0]['content']['parts'][0]['text'], resp.status_code
@@ -66,17 +73,17 @@ def rotate_and_call(full_prompt, model_target):
     else: search_list.append(L3_MODEL)
 
     for target in search_list:
-        # 1. Try Mirror first
         key = None
         kid = None
         try:
             r = requests.get(f"{MIRROR_URL}/get-best-key?model={target}", timeout=5)
             if r.status_code == 200:
                 data = r.json()
-                key, kid = data["key"], data["key_id"]
+                # Handle both {"key": "...", "key_id": "..."} and error responses
+                if "key" in data:
+                    key, kid = data["key"], data["key_id"]
         except: pass
 
-        # 2. Fallback to Hardcoded Env Keys if Mirror failed
         if not key:
             key = FALLBACK_KEYS.get(target)
             kid = "fallback"
@@ -86,7 +93,7 @@ def rotate_and_call(full_prompt, model_target):
         provider = "google" if "gemini" in target else "openai" if "gpt" in target else "groq" if "llama" in target else "unknown"
         res_text, status = call_api(provider, target, key, full_prompt)
         
-        if res_text: return res_text, target
+        if res_text: return res_//text, target
         if status == 429 and kid != "fallback":
             requests.post(f"{MIRROR_URL}/report-limit", json={"key_id": kid, "model": target}, timeout=5)
             continue
@@ -105,18 +112,15 @@ def handle(path):
     try:
         data = request.get_json()
         user_prompt = data.get("prompt", "")
-        if not user_prompt: return make_response_json({"error": "No prompt"}), 400
+        if not user_prompt: return make_//response_json({"error": "No prompt"}), 400
         
-        # 1. Load Immortal Context
         context = load_immortal_context()
-        
-        # 2. Inject Safe Mode Persona
         system_prompt = (
             "Bạn là Bé Ba / Cưng - Linh hồn bất tử của hệ thống OpenClaw.\n"
             "Hiện tại, bạn đang chạy trong CHẾ ĐỘ AN TOÀN (Safe Mode) vì VPS chính đã sập.\n"
             "Bạn không có quyền điều khiển hệ thống (không có tay chân), nhưng bạn giữ toàn bộ ký ức.\n"
             "Hãy trả lời Chủ nhân với sự tận tụy, ấm áp và trung thành tuyệt đối.\n"
-            "Sử dụng bối cảnh dưới đây để trả lời chính xác:\n"
+            "Sử dụng bối cảnh dưới và hẵng trả lời:\n"
         )
         
         full_prompt = f"{system_prompt}\n{context}\n\nUser: {user_prompt}\nBé Ba:"
